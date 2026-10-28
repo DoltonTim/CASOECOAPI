@@ -1,0 +1,347 @@
+{
+  "info": {
+    "name": "EcoAPI - Caso EcoRecicla (Versión B - Dolton Meza)",
+    "_postman_id": "ecorecicla-u2-versionb-dolton-meza",
+    "description": "Colección completa de EcoAPI con los 4 roles (OPERARIO, SUPERVISOR, ADMIN, AUDITOR), guardado automático de tokens JWT, requerimientos RF-B01 a RF-B07 y reglas RN-01 a RN-04 (200, 201, 400, 401, 403, 409).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api/v1" },
+    { "key": "tokenOperario", "value": "" },
+    { "key": "tokenSupervisor", "value": "" },
+    { "key": "tokenAdmin", "value": "" },
+    { "key": "tokenAuditor", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "A. Roles y Privilegios (Sección 3.2 y RF-B01 / RF-B07)",
+      "item": [
+        {
+          "name": "1. Login Rol OPERARIO (operario1) -> Guarda tokenOperario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) { pm.collectionVariables.set('tokenOperario', json.token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"operario1\",\n  \"password\": \"Eco2026*\"\n}"
+            }
+          }
+        },
+        {
+          "name": "1b. Ver Rol y Privilegios de OPERARIO (GET /auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOperario}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        },
+        {
+          "name": "2. Login Rol SUPERVISOR (supervisor1) -> Guarda tokenSupervisor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) { pm.collectionVariables.set('tokenSupervisor', json.token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"supervisor1\",\n  \"password\": \"Eco2026*\"\n}"
+            }
+          }
+        },
+        {
+          "name": "2b. Ver Rol y Privilegios de SUPERVISOR (GET /auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenSupervisor}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        },
+        {
+          "name": "3. Login Rol ADMIN (admin) -> Guarda tokenAdmin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) { pm.collectionVariables.set('tokenAdmin', json.token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Eco2026*\"\n}"
+            }
+          }
+        },
+        {
+          "name": "3b. Ver Rol y Privilegios de ADMIN (GET /auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        },
+        {
+          "name": "4. Login Rol AUDITOR (auditor1 - Parte II) -> Guarda tokenAuditor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) { pm.collectionVariables.set('tokenAuditor', json.token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"auditor1\",\n  \"password\": \"Eco2026*\"\n}"
+            }
+          }
+        },
+        {
+          "name": "4b. Ver Rol y Privilegios de AUDITOR (GET /auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenAuditor}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "B. Requerimientos Funcionales (RF-B02 a RF-B06 y SC-D)",
+      "item": [
+        {
+          "name": "RF-B02: Ruta del día (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOperario}}" }],
+            "url": "{{baseUrl}}/rutas/hoy"
+          }
+        },
+        {
+          "name": "SC-D: Resumen de la ruta del día (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOperario}}" }],
+            "url": "{{baseUrl}}/rutas/hoy/resumen"
+          }
+        },
+        {
+          "name": "RF-B03: Puntos de acopio paginados con filtro de zona (200 OK)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenOperario}}" }],
+            "url": "{{baseUrl}}/puntos?zona=Norte&pagina=0&tamanio=20"
+          }
+        },
+        {
+          "name": "RF-B03b: Crear punto de acopio (Solo ADMIN con PUNTO_GESTIONAR - 201 Created)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/puntos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razonSocial\": \"Recicladora Santa Rosa S.A.C.\",\n  \"direccion\": \"Av. Argentina 2150, Callao\",\n  \"zona\": \"Norte\",\n  \"materialHabitual\": \"PET Cristal\",\n  \"secuencia\": 7\n}"
+            }
+          }
+        },
+        {
+          "name": "RF-B04: Registrar pesaje válido (201 Created con pesoNeto calculado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenOperario}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/pesajes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntoId\": 1,\n  \"material\": \"PET Cristal\",\n  \"pesoBruto\": 95.5,\n  \"tara\": 10.5,\n  \"humedadEstimada\": 3.5,\n  \"observacion\": \"Pesaje registrado en ruta\"\n}"
+            }
+          }
+        },
+        {
+          "name": "RF-B05a: Corregir pesaje propio del mismo día (200 OK)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenOperario}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/pesajes/1",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntoId\": 1,\n  \"material\": \"PET Cristal Compactado\",\n  \"pesoBruto\": 130.0,\n  \"tara\": 15.0,\n  \"humedadEstimada\": 4.0,\n  \"observacion\": \"Peso corregido en balanza\"\n}"
+            }
+          }
+        },
+        {
+          "name": "RF-B05b: Anular pesaje como SUPERVISOR (200 OK - marca ANULADO sin borrar)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenSupervisor}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/pesajes/2/anular",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Error de calibración en contenedor azul\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "C. Reglas de Negocio y Errores (400, 401, 403, 409)",
+      "item": [
+        {
+          "name": "Error 401 - Credenciales incorrectas",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"operario1\",\n  \"password\": \"ClaveErronea\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Error 401 - Ruta protegida sin token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/rutas/hoy"
+          }
+        },
+        {
+          "name": "Error 400 - RN-03 Peso neto menor o igual a cero (validationErrors en tara)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenOperario}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/pesajes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntoId\": 1,\n  \"material\": \"PET Cristal\",\n  \"pesoBruto\": 15.0,\n  \"tara\": 20.0,\n  \"humedadEstimada\": 2.0,\n  \"observacion\": \"Tara mayor que bruto\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Error 403 - OPERARIO intenta anular pesaje (sin privilegio PESAJE_ANULAR)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenOperario}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/pesajes/1/anular",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Intento no autorizado\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Error 403 - AUDITOR intenta registrar pesaje (sin privilegio PESAJE_CREAR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenAuditor}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/pesajes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntoId\": 1,\n  \"material\": \"PET Cristal\",\n  \"pesoBruto\": 50.0,\n  \"tara\": 5.0\n}"
+            }
+          }
+        },
+        {
+          "name": "Error 403 - RN-02 OPERARIO intenta editar pesaje de otro operario (pesaje #4 de operario2)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenOperario}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/pesajes/4",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntoId\": 2,\n  \"material\": \"Carton Corrugado\",\n  \"pesoBruto\": 220.0,\n  \"tara\": 20.0,\n  \"humedadEstimada\": 5.0\n}"
+            }
+          }
+        },
+        {
+          "name": "Error 409 - RN-01 Registrar pesaje en punto de ruta ya cerrada (punto #7)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenOperario}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/pesajes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntoId\": 7,\n  \"material\": \"Aluminio\",\n  \"pesoBruto\": 100.0,\n  \"tara\": 10.0,\n  \"humedadEstimada\": 1.0\n}"
+            }
+          }
+        },
+        {
+          "name": "Error 409 - RN-04 SUPERVISOR intenta cerrar ruta con puntos pendientes",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{tokenSupervisor}}" }],
+            "url": "{{baseUrl}}/rutas/hoy/cerrar"
+          }
+        }
+      ]
+    }
+  ]
+}
