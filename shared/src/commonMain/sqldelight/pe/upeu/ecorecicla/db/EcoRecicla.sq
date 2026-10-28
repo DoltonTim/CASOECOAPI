@@ -1,0 +1,128 @@
+-- ============================================================================
+-- ESQUEMA SQLDELIGHT DERIVADO DEL MODELO DE DOMINIO (SECCION 4.6)
+-- EXPLICACION PARA DEFENSA (Preguntas 7, 8, 9 y Solicitudes SC-A, SC-C, SC-D):
+-- 1. La pantalla principal observa `listarPuntosRuta` / `filtrarPuntosRuta` como Flow
+--    mediante `asFlow().mapToList()`, por lo que funciona con el modo avion activado.
+-- 2. Cada fila de `pesaje` tiene `pendiente INTEGER NOT NULL DEFAULT 0` y un `id`
+--    que es NEGATIVO (-1, -2, ...) mientras esta pendiente de envio, calculado con
+--    `siguienteIdLocal` (`SELECT COALESCE(MIN(id), 0) FROM pesaje`).
+-- 3. `contarPesajesPendientes` expone una consulta observable (`Flow<Long>`) para el
+--    distintivo de pesajes pendientes de sincronizar (SC-D).
+-- ============================================================================
+
+CREATE TABLE punto_acopio (
+    id                INTEGER NOT NULL PRIMARY KEY,
+    razon_social      TEXT    NOT NULL,
+    direccion         TEXT    NOT NULL,
+    zona              TEXT    NOT NULL,
+    material_habitual TEXT    NOT NULL,
+    secuencia         INTEGER NOT NULL,
+    atendido          INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE pesaje (
+    id               INTEGER NOT NULL PRIMARY KEY,
+    punto_id         INTEGER NOT NULL,
+    fecha_hora       TEXT    NOT NULL,
+    material         TEXT    NOT NULL,
+    peso_bruto       REAL    NOT NULL,
+    tara             REAL    NOT NULL,
+    peso_neto        REAL    NOT NULL,
+    humedad_estimada REAL    NOT NULL DEFAULT 0.0,
+    observacion      TEXT,
+    operario         TEXT    NOT NULL,
+    estado           TEXT    NOT NULL DEFAULT 'REGISTRADO',
+    motivo_anulacion TEXT,
+    pendiente        INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE meta_ruta (
+    clave TEXT NOT NULL PRIMARY KEY,
+    valor TEXT NOT NULL
+);
+
+-- ==================== CONSULTAS DE PUNTOS DE ACOPIO ====================
+
+listarPuntosRuta:
+SELECT * FROM punto_acopio
+ORDER BY secuencia ASC, id ASC;
+
+-- SC-A: Filtro "Solo pendientes de pesar" combinado con buscador en SQL local
+filtrarPuntosRuta:
+SELECT * FROM punto_acopio
+WHERE (:soloPendientes = 0 OR atendido = 0)
+  AND (
+    :busqueda = ''
+    OR LOWER(razon_social) LIKE '%' || LOWER(:busqueda) || '%'
+    OR LOWER(direccion) LIKE '%' || LOWER(:busqueda) || '%'
+    OR LOWER(zona) LIKE '%' || LOWER(:busqueda) || '%'
+    OR LOWER(material_habitual) LIKE '%' || LOWER(:busqueda) || '%'
+  )
+ORDER BY secuencia ASC, id ASC;
+
+obtenerPuntoPorId:
+SELECT * FROM punto_acopio WHERE id = ?;
+
+insertarPunto:
+INSERT OR REPLACE INTO punto_acopio (
+    id, razon_social, direccion, zona, material_habitual, secuencia, atendido
+) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+marcarPuntoAtendido:
+UPDATE punto_acopio SET atendido = ? WHERE id = ?;
+
+borrarPuntos:
+DELETE FROM punto_acopio;
+
+-- ==================== CONSULTAS DE PESAJES ====================
+
+listarPesajesPorPunto:
+SELECT * FROM pesaje
+WHERE punto_id = ?
+ORDER BY fecha_hora DESC, id DESC;
+
+obtenerPesajePorId:
+SELECT * FROM pesaje WHERE id = ?;
+
+listarPesajesPendientes:
+SELECT * FROM pesaje
+WHERE pendiente = 1
+ORDER BY id DESC;
+
+-- SC-D: Distintivo observable con el numero de pesajes pendientes de sincronizar
+contarPesajesPendientes:
+SELECT COUNT(*) FROM pesaje WHERE pendiente = 1;
+
+-- Seccion 4.6: Siguiente identificador local provisional sin colisionar con el servidor
+-- COALESCE evita NULL cuando la tabla esta vacia; en Kotlin minOf(menor, 0L) - 1L da -1, -2...
+siguienteIdLocal:
+SELECT COALESCE(MIN(id), 0) FROM pesaje;
+
+insertarPesaje:
+INSERT OR REPLACE INTO pesaje (
+    id, punto_id, fecha_hora, material, peso_bruto, tara, peso_neto,
+    humedad_estimada, observacion, operario, estado, motivo_anulacion, pendiente
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+eliminarPesajePorId:
+DELETE FROM pesaje WHERE id = ?;
+
+borrarPesajesSincronizadosDePunto:
+DELETE FROM pesaje WHERE punto_id = ? AND pendiente = 0;
+
+borrarTodosPesajesSincronizados:
+DELETE FROM pesaje WHERE pendiente = 0;
+
+borrarTodosPesajes:
+DELETE FROM pesaje;
+
+-- ==================== METADATOS DE LA RUTA ====================
+
+guardarMeta:
+INSERT OR REPLACE INTO meta_ruta(clave, valor) VALUES (?, ?);
+
+leerMeta:
+SELECT valor FROM meta_ruta WHERE clave = ?;
+
+borrarMeta:
+DELETE FROM meta_ruta;
